@@ -367,20 +367,21 @@ void set2layeripsecrules_xfrm(siptx_req_ipsec_connect_struct * Tunndatabse,siptx
 			memcpy(dir_c,"out",strlen("out"));
 			if(!Handover) {
 				should_2layer = compare_ip_for_prefix(tmp->family, &tmp->local_ip_c[0], tmp->pref_s, Transdata_var.family, &Transdata_var.local_ip_c[0], Transdata_var.pref_s) && strcmp(tmp->tunnel_ip_s,Transdata_var.local_ip_c)!=0;
+				ALOGD("compare out:should_2layer = %d;tmp->local_ip_c:%s,tmp->pref_s:%d,Transdata_var.local_ip_c:%s,tmp->tunnel_ip_s:%s,Transdata_var.local_ip_c:%s,Transdata_var.pref_s:%d\n",should_2layer, tmp->local_ip_c,tmp->pref_s,Transdata_var.local_ip_c,tmp->tunnel_ip_s,Transdata_var.local_ip_c,Transdata_var.pref_s);
 			}
 			else {
 				should_2layer = compare_ip_for_prefix(tmp->family, &tmp->local_ip_c[0], tmp->pref_s, Transdata_var.family, &Transdata_var.local_ip_c[0], Transdata_var.pref_s) && strcmp(Transdata_var.tunnel_ip_s,tmp->local_ip_c)!=0;
-
+				ALOGD("compare out:should_2layer = %d;tmp->local_ip_c:%s,tmp->pref_s:%d,Transdata_var.local_ip_c:%s,tmp->tunnel_ip_s:%s,Transdata_var.local_ip_c:%s,Transdata_var.pref_s:%d\n",should_2layer, tmp->local_ip_c,tmp->pref_s,Transdata_var.local_ip_c,Transdata_var.tunnel_ip_s,tmp->local_ip_c,Transdata_var.pref_s);
 			}
 			break;
 			case XFRM_POLICY_IN:
 			memcpy(dir_c,"in",strlen("in"));
 			if(!Handover) {
-				should_2layer = compare_ip_for_prefix(tmp->family, &tmp->target_ip_s[0], tmp->pref_d, Transdata_var.family, &Transdata_var.target_ip_s[0], Transdata_var.pref_s) && strcmp(tmp->tunnel_ip_d,Transdata_var.target_ip_s)!=0;
-
+				should_2layer = compare_ip_for_prefix(tmp->family, &tmp->target_ip_s[0], tmp->pref_d, Transdata_var.family, &Transdata_var.target_ip_s[0], Transdata_var.pref_d) && strcmp(tmp->tunnel_ip_d,Transdata_var.target_ip_s)!=0;
+				ALOGD("compare in:should_2layer = %d;tmp->target_ip_s:%s,tmp->pref_d:%d,Transdata_var.target_ip_s:%s,Transdata_var.pref_d:%d,tmp->tunnel_ip_s:%s,Transdata_var.local_ip_c:%s\n",should_2layer, tmp->target_ip_s,tmp->pref_d,Transdata_var.target_ip_s,Transdata_var.pref_d,tmp->tunnel_ip_d,Transdata_var.target_ip_s);
 			} else {
-				should_2layer = compare_ip_for_prefix(tmp->family, &tmp->target_ip_s[0], tmp->pref_d, Transdata_var.family, &Transdata_var.target_ip_s[0], Transdata_var.pref_s) && strcmp(Transdata_var.tunnel_ip_d,tmp->target_ip_s)!=0;
-
+				should_2layer = compare_ip_for_prefix(tmp->family, &tmp->target_ip_s[0], tmp->pref_d, Transdata_var.family, &Transdata_var.target_ip_s[0], Transdata_var.pref_d) && strcmp(Transdata_var.tunnel_ip_d,tmp->target_ip_s)!=0;
+				ALOGD("compare in:should_2layer = %d;tmp->target_ip_s:%s,tmp->pref_d:%d,Transdata_var.target_ip_s:%s,Transdata_var.pref_d:%d,tmp->tunnel_ip_s:%s,Transdata_var.local_ip_c:%s\n",should_2layer, tmp->target_ip_s,tmp->pref_d,Transdata_var.target_ip_s,Transdata_var.pref_d,Transdata_var.tunnel_ip_d,tmp->target_ip_s);
 			}
 			break;
 			default: //forward or other action
@@ -397,23 +398,23 @@ void set2layeripsecrules_xfrm(siptx_req_ipsec_connect_struct * Tunndatabse,siptx
 		tmpl->family = tmp->family;
 		tmpl->mode = XFRM_MODE_TRANSPORT;
 
-			tmpl->aalgos = (~(__u32)0);
-			tmpl->ealgos = (~(__u32)0);
-			tmpl->calgos = (~(__u32)0);		
+		tmpl->aalgos = (~(__u32)0);
+		tmpl->ealgos = (~(__u32)0);
+		tmpl->calgos = (~(__u32)0);	
 		if(!Handover) {
 			tmpl->reqid = Transdata_var.request_id;
 			tmpl->id.proto = Transdata_var.ipsec_type;
 		} else {
 			tmpl->reqid = tmp->request_id;
 			tmpl->id.proto = tmp->ipsec_type;
-		}		
+		}
 
 	        tmpls_len += sizeof(*tmpl);
 		tmpl = (struct xfrm_user_tmpl *)((char *)tmpls_buf + tmpls_len);
 		tmpl->mode = XFRM_MODE_TUNNEL;
-			tmpl->aalgos = (~(__u32)0);
-			tmpl->ealgos = (~(__u32)0);
-			tmpl->calgos = (~(__u32)0);			
+		tmpl->aalgos = (~(__u32)0);
+		tmpl->ealgos = (~(__u32)0);
+		tmpl->calgos = (~(__u32)0);
 		if(!Handover) {
 
 			tmpl->reqid =tmp->request_id;
@@ -434,7 +435,7 @@ void set2layeripsecrules_xfrm(siptx_req_ipsec_connect_struct * Tunndatabse,siptx
 			req.xpinfo.sel.sport_mask = Transdata_var.sport_mask;
 			req.xpinfo.sel.ifindex = Transdata_var.ifindex;
 			req.xpinfo.sel.user = Transdata_var.user;
-ALOGD("tmpl->reqid:%d,tmpl->id.proto:%d,tmpl_family:%d,mode:%d,proto:%d,tunnel_s:%s,tunnel_d:%s,local_ip_c:%s[%d/%x]/%d,target_ip_s:%s[%d/%x]/%d,family:%d,priority:0x%x,index:%d,user:%d\n",tmpl->reqid,tmpl->id.proto,tmpl->family,tmpl->mode,req.xpinfo.sel.proto,tmp->tunnel_ip_s,tmp->tunnel_ip_d,Transdata_var.local_ip_c,Transdata_var.local_port_c,req.xpinfo.sel.sport_mask,req.xpinfo.sel.prefixlen_s,Transdata_var.target_ip_s,Transdata_var.target_port_s,req.xpinfo.sel.dport_mask ,req.xpinfo.sel.prefixlen_d,req.xpinfo.sel.family,req.xpinfo.priority,req.xpinfo.sel.ifindex,req.xpinfo.sel.user);
+			ALOGD("tmpl->reqid:%d,tmpl->id.proto:%d,tmpl_family:%d,mode:%d,proto:%d,tunnel_s:%s,tunnel_d:%s,local_ip_c:%s[%d/%x]/%d,target_ip_s:%s[%d/%x]/%d,family:%d,priority:0x%x,index:%d,user:%d\n",tmpl->reqid,tmpl->id.proto,tmpl->family,tmpl->mode,req.xpinfo.sel.proto,tmp->tunnel_ip_s,tmp->tunnel_ip_d,Transdata_var.local_ip_c,Transdata_var.local_port_c,req.xpinfo.sel.sport_mask,req.xpinfo.sel.prefixlen_s,Transdata_var.target_ip_s,Transdata_var.target_port_s,req.xpinfo.sel.dport_mask ,req.xpinfo.sel.prefixlen_d,req.xpinfo.sel.family,req.xpinfo.priority,req.xpinfo.sel.ifindex,req.xpinfo.sel.user);
 		
 		} else {
 
@@ -457,12 +458,12 @@ ALOGD("tmpl->reqid:%d,tmpl->id.proto:%d,tmpl_family:%d,mode:%d,proto:%d,tunnel_s
 			req.xpinfo.sel.sport_mask = tmp->sport_mask;
 			req.xpinfo.sel.ifindex = tmp->ifindex;
 			req.xpinfo.sel.user = tmp->user;
-ALOGD("tmpl->reqid:%d,tmpl->id.proto:%d,tunnel_family:%d,mode:%d,proto:%d,tunnel_s:%s,tunnel_d:%s,local_ip_c:%s[%d/%x]/%d,target_ip_s:%s[%d/%x]/%d,sel_family:%d,priority:0x%x,index:%d,user:%d\n",tmpl->reqid,tmpl->id.proto,tmpl->family,tmpl->mode,req.xpinfo.sel.proto,Transdata_var.tunnel_ip_s,Transdata_var.tunnel_ip_d,tmp->local_ip_c,tmp->local_port_c,tmp->sport_mask,req.xpinfo.sel.prefixlen_s,tmp->target_ip_s,tmp->target_port_s,tmp->dport_mask,req.xpinfo.sel.prefixlen_d,req.xpinfo.sel.family,req.xpinfo.priority,tmp->ifindex,tmp->user);
+			ALOGD("tmpl->reqid:%d,tmpl->id.proto:%d,tunnel_family:%d,mode:%d,proto:%d,tunnel_s:%s,tunnel_d:%s,local_ip_c:%s[%d/%x]/%d,target_ip_s:%s[%d/%x]/%d,sel_family:%d,priority:0x%x,index:%d,user:%d\n",tmpl->reqid,tmpl->id.proto,tmpl->family,tmpl->mode,req.xpinfo.sel.proto,Transdata_var.tunnel_ip_s,Transdata_var.tunnel_ip_d,tmp->local_ip_c,tmp->local_port_c,tmp->sport_mask,req.xpinfo.sel.prefixlen_s,tmp->target_ip_s,tmp->target_port_s,tmp->dport_mask,req.xpinfo.sel.prefixlen_d,req.xpinfo.sel.family,req.xpinfo.priority,tmp->ifindex,tmp->user);
 
 
 		}
 
-		tmpls_len += sizeof(*tmpl);
+	tmpls_len += sizeof(*tmpl);
 	if (tmpls_len > 0) {
 		addattr_l(&req.n, sizeof(req), XFRMA_TMPL,
 			  (void *)tmpls_buf, tmpls_len);
@@ -513,21 +514,21 @@ void set2layeripsecrules(siptx_req_ipsec_connect_struct * Tunndatabse,siptx_req_
 			memcpy(dir_c,"out",strlen("out"));
 			if(!Handover) {
 				should_2layer = compare_ip_for_prefix(tmp->family, &tmp->local_ip_c[0], tmp->pref_s, Transdata_var.family, &Transdata_var.local_ip_c[0], Transdata_var.pref_s) && strcmp(tmp->tunnel_ip_s,Transdata_var.local_ip_c)!=0;
-			//ALOGD("compare out:should_2layer = %d;tmp->local_ip_c:%s,Transdata_var.local_ip_c:%s,tmp->tunnel_ip_s:%s,Transdata_var.local_ip_c:%s\n",should_2layer, tmp->local_ip_c,Transdata_var.local_ip_c,tmp->tunnel_ip_s,Transdata_var.local_ip_c);
+				ALOGD("compare out:should_2layer = %d;tmp->local_ip_c:%s,Transdata_var.local_ip_c:%s,tmp->tunnel_ip_s:%s,Transdata_var.local_ip_c:%s\n",should_2layer, tmp->local_ip_c,Transdata_var.local_ip_c,tmp->tunnel_ip_s,Transdata_var.local_ip_c);
 			}
 			else {
 				should_2layer = compare_ip_for_prefix(tmp->family, &tmp->local_ip_c[0], tmp->pref_s, Transdata_var.family, &Transdata_var.local_ip_c[0], Transdata_var.pref_s) && strcmp(Transdata_var.tunnel_ip_s,tmp->local_ip_c)!=0;
-				//ALOGD("compare out:should_2layer = %d;tmp->local_ip_c:%s,Transdata_var.local_ip_c:%s,tmp->tunnel_ip_s:%s,Transdata_var.local_ip_c:%s\n",should_2layer, tmp->local_ip_c,Transdata_var.local_ip_c,Transdata_var.tunnel_ip_s,tmp->local_ip_c);
+				ALOGD("compare out:should_2layer = %d;tmp->local_ip_c:%s,Transdata_var.local_ip_c:%s,tmp->tunnel_ip_s:%s,Transdata_var.local_ip_c:%s\n",should_2layer, tmp->local_ip_c,Transdata_var.local_ip_c,Transdata_var.tunnel_ip_s,tmp->local_ip_c);
 			}
 			break;
 			case XFRM_POLICY_IN:
 			memcpy(dir_c,"in",strlen("in"));
 			if(!Handover) {
 				should_2layer = compare_ip_for_prefix(tmp->family, &tmp->target_ip_s[0], tmp->pref_d, Transdata_var.family, &Transdata_var.target_ip_s[0], Transdata_var.pref_s) && strcmp(tmp->tunnel_ip_d,Transdata_var.target_ip_s)!=0;
-				//ALOGD("compare in:should_2layer = %d;tmp->target_ip_s:%s,Transdata_var.target_ip_s:%s,tmp->tunnel_ip_s:%s,Transdata_var.local_ip_c:%s\n",should_2layer, tmp->target_ip_s,Transdata_var.target_ip_s,tmp->tunnel_ip_d,Transdata_var.target_ip_s);
+				ALOGD("compare in:should_2layer = %d;tmp->target_ip_s:%s,Transdata_var.target_ip_s:%s,tmp->tunnel_ip_s:%s,Transdata_var.local_ip_c:%s\n",should_2layer, tmp->target_ip_s,Transdata_var.target_ip_s,tmp->tunnel_ip_d,Transdata_var.target_ip_s);
 			} else {
 				should_2layer = compare_ip_for_prefix(tmp->family, &tmp->target_ip_s[0], tmp->pref_d, Transdata_var.family, &Transdata_var.target_ip_s[0], Transdata_var.pref_s) && strcmp(Transdata_var.tunnel_ip_d,tmp->target_ip_s)!=0;
-				//ALOGD("compare in:should_2layer = %d;tmp->target_ip_s:%s,Transdata_var.target_ip_s:%s,tmp->tunnel_ip_s:%s,Transdata_var.local_ip_c:%s\n",should_2layer, tmp->target_ip_s,Transdata_var.target_ip_s,Transdata_var.tunnel_ip_d,tmp->target_ip_s);
+				ALOGD("compare in:should_2layer = %d;tmp->target_ip_s:%s,Transdata_var.target_ip_s:%s,tmp->tunnel_ip_s:%s,Transdata_var.local_ip_c:%s\n",should_2layer, tmp->target_ip_s,Transdata_var.target_ip_s,Transdata_var.tunnel_ip_d,tmp->target_ip_s);
 			}
 			break;
 			default: //forward or other action
@@ -628,7 +629,7 @@ void change1layeripsecrules_xfrm(siptx_req_ipsec_connect_struct * Transdatabase,
 		if(tmp->used == 0)
 			continue;
                 should_1layer = compare_ip_for_prefix(tmp->family, &tmp->local_ip_c[0], tmp->pref_s, xpid->sel.family, srcbuf, xpid->sel.prefixlen_s) && compare_ip_for_prefix(tmp->family,&tmp->target_ip_s[0], tmp->pref_d,  xpid->sel.family, dstbuf, xpid->sel.prefixlen_d);
-		//ALOGD("compare out:should_1layer = %d;tmp->local_ip_c:%s,srcbuf:%s,tmp->target_ip_s:%s,dstbuf:%s\n",should_1layer, tmp->local_ip_c,srcbuf,tmp->target_ip_s,dstbuf);
+		ALOGD("compare out:should_1layer = %d;tmp->local_ip_c:%s,tmp->pref_s:%d,srcbuf:%s,xpid->sel.prefixlen_s:%d,tmp->target_ip_s:%s,tmp->pref_d:%d, dstbuf:%s, xpid->sel.prefixlen_d:%d\n",should_1layer, tmp->local_ip_c,tmp->pref_s,srcbuf,xpid->sel.prefixlen_s,tmp->target_ip_s,tmp->pref_d,dstbuf, xpid->sel.prefixlen_d);
 		if(!should_1layer)
 			continue;
 
@@ -638,26 +639,26 @@ void change1layeripsecrules_xfrm(siptx_req_ipsec_connect_struct * Transdatabase,
 		tmpl->family = tmp->family;
 		tmpl->mode = XFRM_MODE_TRANSPORT;
 
-			tmpl->aalgos = (~(__u32)0);
-			tmpl->ealgos = (~(__u32)0);
-			tmpl->calgos = (~(__u32)0);		
-			tmpl->reqid = tmp->request_id;
-			tmpl->id.proto = tmp->ipsec_type;	
-			tmpl->family = tmp->family;
-			rt_addr_aton(tmp->family,tmp->local_ip_c,&req.xpinfo.sel.saddr);
-			rt_addr_aton(tmp->family,tmp->target_ip_s,&req.xpinfo.sel.daddr);
-			req.xpinfo.sel.prefixlen_s = tmp->pref_s;
-			req.xpinfo.sel.prefixlen_d = tmp->pref_d;
-			req.xpinfo.sel.sport = htons(tmp->local_port_c);
-			req.xpinfo.sel.dport = htons(tmp->target_port_s);
-			req.xpinfo.sel.proto = tmp->proto;
-			req.xpinfo.sel.family = tmp->family;
-			req.xpinfo.priority = 1000;
-			req.xpinfo.sel.dport_mask = tmp->dport_mask;
-			req.xpinfo.sel.sport_mask = tmp->sport_mask;
-			req.xpinfo.sel.ifindex = tmp->ifindex;
-			req.xpinfo.sel.user = tmp->user;	
-ALOGD("change1layer---tmpl->reqid:%d,tmpl->id.proto:%d,tunnel_family:%d,mode:%d,proto:%d,local_ip_c:%s[%d/%x]/%d,target_ip_s:%s[%d/%x]/%d,sel_family:%d,priority:0x%x,index:%d,user:%d\n",tmpl->reqid,tmpl->id.proto,tmpl->family,tmpl->mode,req.xpinfo.sel.proto,tmp->local_ip_c,tmp->local_port_c,tmp->sport_mask,req.xpinfo.sel.prefixlen_s,tmp->target_ip_s,req.xpinfo.sel.dport,tmp->dport_mask,req.xpinfo.sel.prefixlen_d,req.xpinfo.sel.family,req.xpinfo.priority,tmp->ifindex,tmp->user);
+		tmpl->aalgos = (~(__u32)0);
+		tmpl->ealgos = (~(__u32)0);
+		tmpl->calgos = (~(__u32)0);		
+		tmpl->reqid = tmp->request_id;
+		tmpl->id.proto = tmp->ipsec_type;	
+		tmpl->family = tmp->family;
+		rt_addr_aton(tmp->family,tmp->local_ip_c,&req.xpinfo.sel.saddr);
+		rt_addr_aton(tmp->family,tmp->target_ip_s,&req.xpinfo.sel.daddr);
+		req.xpinfo.sel.prefixlen_s = tmp->pref_s;
+		req.xpinfo.sel.prefixlen_d = tmp->pref_d;
+		req.xpinfo.sel.sport = htons(tmp->local_port_c);
+		req.xpinfo.sel.dport = htons(tmp->target_port_s);
+		req.xpinfo.sel.proto = tmp->proto;
+		req.xpinfo.sel.family = tmp->family;
+		req.xpinfo.priority = 1000;
+		req.xpinfo.sel.dport_mask = tmp->dport_mask;
+		req.xpinfo.sel.sport_mask = tmp->sport_mask;
+		req.xpinfo.sel.ifindex = tmp->ifindex;
+		req.xpinfo.sel.user = tmp->user;	
+		ALOGD("change1layer---tmpl->reqid:%d,tmpl->id.proto:%d,tunnel_family:%d,mode:%d,proto:%d,local_ip_c:%s[%d/%x]/%d,target_ip_s:%s[%d/%x]/%d,sel_family:%d,priority:0x%x,index:%d,user:%d\n",tmpl->reqid,tmpl->id.proto,tmpl->family,tmpl->mode,req.xpinfo.sel.proto,tmp->local_ip_c,tmp->local_port_c,tmp->sport_mask,req.xpinfo.sel.prefixlen_s,tmp->target_ip_s,req.xpinfo.sel.dport,tmp->dport_mask,req.xpinfo.sel.prefixlen_d,req.xpinfo.sel.family,req.xpinfo.priority,tmp->ifindex,tmp->user);
 	        tmpls_len += sizeof(*tmpl);
 	if (tmpls_len > 0) {
 		addattr_l(&req.n, sizeof(req), XFRMA_TMPL,
@@ -758,7 +759,7 @@ int compare_ip_for_prefix(int family1, char* ip1, int pfix1, int family2, char* 
 		return 0;
 
     while (min_pfix > 0) {
-    	//ALOGD("[compare_ip_for_prefix] min_pfix = %d; ip1_ptr = 0x%08X; ip2_ptr = 0x%08X\n", min_pfix, *ip1_ptr, *ip2_ptr);
+    	/*ALOGD("[compare_ip_for_prefix] min_pfix = %d; ip1_ptr = 0x%08X; ip2_ptr = 0x%08X\n", min_pfix, *ip1_ptr, *ip2_ptr);*/
     	if (min_pfix - 32 >= 0) {
     		if (*ip1_ptr != *ip2_ptr)
     			return 0;
