@@ -184,7 +184,7 @@ int xfrm_policy_process( struct nlmsghdr *n)
 		rt_addr_ntoa(f, &xpinfo->sel.daddr, dstbuf, sizeof(dstbuf));
 	}
 #ifdef INIT_ENG_BUILD
-	ALOGD("parsePolicyMessage nh type:%d,len:%d,srcbuf:%s,dstbuf:%s,sizeof(sizeof(*xpinfo):%lu,f:%d,pid:%d\n", n->nlmsg_type,len,srcbuf,dstbuf,sizeof(*xpinfo),f,n->nlmsg_pid);
+	ALOGD("parsePolicyMessage nh type:%d,len:%d,srcbuf:%s,dstbuf:%s,sizeof(sizeof(*xpinfo):%u,f:%d,pid:%d\n", n->nlmsg_type,len,srcbuf,dstbuf,sizeof(*xpinfo),f,n->nlmsg_pid);
 #endif
 	if (len < 0) {
 		ALOGE( "BUG: wrong nlmsg len %d\n", len);

@@ -11,7 +11,7 @@
 #include <stdlib.h>
 #include <arpa/inet.h>
 #include <linux/xfrm.h>
-
+#include "setkey_fileio/utils_xfrm.h"
 
 /*
  * Receiving buffer defines:
@@ -42,8 +42,6 @@ struct req_handle {
 typedef int (*rtnl_filter_t)(struct nlmsghdr *n);
 extern int record_only;
 
-#define NLMSG_TAIL(nmsg) \
-	((struct rtattr *) (((void *) (nmsg)) + NLMSG_ALIGN((nmsg)->nlmsg_len)))
 #define XFRMS_RTA(x)  ((struct rtattr*)(((char*)(x)) + NLMSG_ALIGN(sizeof(struct xfrm_usersa_info))))
 #define XFRMS_PAYLOAD(n) NLMSG_PAYLOAD(n,sizeof(struct xfrm_usersa_info))
 
